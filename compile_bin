@@ -1,0 +1,15 @@
+#!/usr/bin/bash
+
+function main() {
+    local targetName="dart_module_generator"
+    local srcFile="./bin/module_generator.dart"
+
+    local targetBuildDir="build"
+    local targetExe="build/$targetName"
+
+    rm -rf "$targetBuildDir" && \
+    mkdir -p "$targetBuildDir" && \
+    dart compile exe "$srcFile" -o "$targetExe"
+}
+
+main "${@}"
