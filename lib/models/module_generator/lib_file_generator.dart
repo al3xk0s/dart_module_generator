@@ -13,7 +13,6 @@ class LibFileGeneratorImpl implements LibFileGenerator {
 
   @override
   Iterable<String> generateLibFile(List<SourceFile> files, String libname) sync* {
-
     yield LibraryDeclareLine(libname).toString();
     yield _indent;
     yield* _getImportsBlock(files).toSet();
@@ -35,6 +34,8 @@ class LibFileGeneratorImpl implements LibFileGenerator {
 
   @override
   Iterable<String> generateSourceFile(SourceContent sourceFileContent, String libname) sync* {
+    if(sourceFileContent.sources.isEmpty) return;
+
     yield PartOf.name(libname).toString();
     yield _indent;
     yield* sourceFileContent.sources;

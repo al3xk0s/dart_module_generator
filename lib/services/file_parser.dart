@@ -26,8 +26,11 @@ class FileParserImpl implements FileParser {
 
   Iterable<String> _stripIterable(Iterable<String> source) {
     final srcList = source.toList();
-    final start = srcList.indexWhere((e) => e.isNotEmpty);
-    final finish = srcList.lastIndexWhere((e) => e.isNotEmpty);
+    final start = srcList.indexWhere((e) => e.trim().isNotEmpty);
+    final finish = srcList.lastIndexWhere((e) => e.trim().isNotEmpty);
+
+    if(start == -1 && finish == -1) return [];
+
     return srcList.getRange(start, finish + 1);
   }
 }

@@ -68,6 +68,16 @@ void main() {
     expect(actual.sources, userViewSourceContent.sources);
   });
 
+  test('Parse source with empty', () {
+    final code = [
+      'class SomeCode {}',
+      '',
+    ];
+    final actual = FileParserImpl().parse(code);
+    expect(actual.imports, const []);
+    expect(actual.sources, [code.first]);
+  });
+
   test('Generate source file', () {
     final libname = 'libr';
     final actual = LibFileGeneratorImpl().generateSourceFile(userViewSourceContent, libname).toList();
