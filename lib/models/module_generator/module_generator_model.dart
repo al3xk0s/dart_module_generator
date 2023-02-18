@@ -8,7 +8,7 @@ import 'package:module_generator/services/file_parser.dart';
 import 'package:module_generator/services/file_service.dart';
 
 abstract class ModuleGeneratorModel {
-  Future<void> refactor(Uri rootDirectory, {String? libname});
+  Future<void> refactor(Uri rootDirectory, {String? libname, String? filename});
 }
 
 class RefactorModelImpl implements ModuleGeneratorModel {
@@ -20,35 +20,42 @@ class RefactorModelImpl implements ModuleGeneratorModel {
   final LibFileGenerator libFileGenerator;
 
   @override
-  Future<void> refactor(Uri rootDirectory, {String? libname}) async {
+  Future<void> refactor(Uri rootDirectory, {String? libname, String? filename}) async {
+    filename ??= _getFileName(rootDirectory);
+    libname ??= filename;
+
+    await _validateFileName(rootDirectory, filename);
+
     final filesInfo = await fileFinder.getTargetFiles(rootDirectory);
     final sourceFiles = await _getSourceFiles(filesInfo);
-
-    final filename = await _getFileName(rootDirectory);
-    libname ??= filename;
 
     final libContent = libFileGenerator.generateLibFile(sourceFiles, libname);
     final fileContentPairs = sourceFiles.map((f) => _InfoContentPair(f.info, libFileGenerator.generateSourceFile(f.content, libname!)));
 
+    final path = _resolveFile(rootDirectory, filename);
+
     await Future.wait([
-      _writeLibFile(libContent, rootDirectory, filename),
+      _writeLibFile(libContent, path),
       _writeSourceFiles(fileContentPairs),
     ]);
   }
 
   String _toDartFile(String filename) => '$filename.dart'; 
 
-  Future<String> _getFileName(Uri rootDirectory) async {
-    final f = rootDirectory.toFilePath();
-    final name = f.substring(f.lastIndexOf('/') + 1);
-
-    if(await fileService.existFile(_toDartFile(name))) return '$name${Random().nextInt(100)}';
-    return name;
+  Future<void> _validateFileName(Uri rootDirectory, String filename) async {
+    if(await fileService.existFile(_resolveFile(rootDirectory, filename))) throw Exception('File $filename already exist');
   }
 
-  Future<void> _writeLibFile(Iterable<String> libSrc, Uri rootDirectory, String filename) async {
-    var path = '${rootDirectory.toFilePath()}/$filename.dart';
-    return fileService.write(libSrc, path);
+  String _getFileName(Uri rootDirectory) {
+    final f = rootDirectory.toFilePath();
+    return '${f.substring(f.lastIndexOf('/') + 1)}_api';
+  }
+
+  String _resolveFile(Uri rootDirectory, String filename)
+    => _toDartFile('${rootDirectory.toFilePath()}/$filename');
+
+  Future<void> _writeLibFile(Iterable<String> libSrc, String filepath) async {
+    return fileService.write(libSrc, filepath);
   }
 
   Future<void> _writeSourceFiles(Iterable<_InfoContentPair> files) async {

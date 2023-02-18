@@ -7,7 +7,7 @@ void main(List<String> arguments) async {
   if(args.isHelp) return worker.showHelp();
 
   final refactorModel = getRefactorModel();
-  await refactorModel.refactor(args.path, libname: args.libname);
+  await refactorModel.refactor(args.path, libname: args.libname, filename: args.filename);
 }
 
 
