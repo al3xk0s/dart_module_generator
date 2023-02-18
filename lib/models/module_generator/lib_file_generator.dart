@@ -36,7 +36,7 @@ class LibFileGeneratorImpl implements LibFileGenerator {
   @override
   Iterable<String> generateSourceFile(SourceContent sourceFileContent, String libname) sync* {
     yield PartOf.name(libname).toString();
-    if(sourceFileContent.sources.isNotEmpty && sourceFileContent.sources.first != '') yield _indent;
+    yield _indent;
     yield* sourceFileContent.sources;
   }
 }

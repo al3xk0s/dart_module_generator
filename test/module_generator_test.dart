@@ -28,7 +28,6 @@ void main() {
       "import 'view.dart';",
     ],
     [
-      "",
       "class UserView extends View {",
       "  final User user;",
       "",
@@ -42,7 +41,6 @@ void main() {
       "    ];",
       "  }",
       "}",
-      "",
     ],
   );
 
@@ -52,8 +50,11 @@ void main() {
   );
 
   final userViewSources = [
+    '',
     ...userViewSourceContent.imports,
+    '',
     ...userViewSourceContent.sources,
+    '',
   ];
 
   test('Find files', () async {
@@ -72,6 +73,7 @@ void main() {
     final actual = LibFileGeneratorImpl().generateSourceFile(userViewSourceContent, libname).toList();
     final expected = [
       'part of $libname;',
+      '',
       ...userViewSourceContent.sources,
     ];
     expect(actual, expected);

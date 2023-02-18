@@ -17,10 +17,17 @@ class FileParserImpl implements FileParser {
   }
 
   Iterable<String> _getImports(Iterable<String> lines) {
-    return lines.where(_importPattern.hasMatch);
+    return _stripIterable(lines.where(_importPattern.hasMatch));
   }
 
-    Iterable<String> _getSource(Iterable<String> lines) {
-    return lines.where((s) => !_importPattern.hasMatch(s));
+  Iterable<String> _getSource(Iterable<String> lines) {
+    return _stripIterable(lines.where((s) => !_importPattern.hasMatch(s)));
+  }
+
+  Iterable<String> _stripIterable(Iterable<String> source) {
+    final srcList = source.toList();
+    final start = srcList.indexWhere((e) => e.isNotEmpty);
+    final finish = srcList.lastIndexWhere((e) => e.isNotEmpty);
+    return srcList.getRange(start, finish + 1);
   }
 }
