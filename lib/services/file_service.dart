@@ -1,7 +1,7 @@
 import 'dart:io';
 
 abstract class FileService {
-  Future<void> write(Iterable<String> src, String path);
+  Future<void> write(String path, Iterable<String> src);
   Future<List<String>> read(String path);
   Future<bool> existFile(String path);
 }
@@ -22,7 +22,7 @@ class FileServiceImpl implements FileService {
   }
 
   @override
-  Future<void> write(Iterable<String> src, String path) {
+  Future<void> write(String path, Iterable<String> src) {
     final content = src.join('\n');
     return File(path).writeAsString(content, mode: writeMode);
   }
