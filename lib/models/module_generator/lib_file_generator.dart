@@ -22,8 +22,12 @@ class LibFileGeneratorImpl implements LibFileGenerator {
 
   Iterable<String> _getImportsBlock(List<SourceFile> files) sync* {
     for(final file in files) {
-      yield* file.content.imports;
+      yield* file.content.imports.map((i) => i.trim()).where((i) => !_isSourceReferenceImport(i, files));
     }
+  }
+
+  bool _isSourceReferenceImport(String importStr, List<SourceFile> files) {
+    return files.any((f) => importStr.endsWith("${f.info.relative}';"));
   }
 
   Iterable<String> _getPartBlock(List<SourceFile> files) sync* {
@@ -39,5 +43,6 @@ class LibFileGeneratorImpl implements LibFileGenerator {
     yield PartOf.name(libname).toString();
     yield _indent;
     yield* sourceFileContent.sources;
+    yield _indent;
   }
 }
