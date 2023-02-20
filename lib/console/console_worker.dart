@@ -1,9 +1,10 @@
 import 'package:args/args.dart';
 import 'package:module_generator/console/extentions.dart';
 import 'package:module_generator/console/my_option.dart';
+import 'package:module_generator/helper.dart';
 
 class Arguments {
-  final Uri path;
+  final String path;
   final String? libname;
   final String? filename;
 
@@ -13,6 +14,8 @@ class Arguments {
 }
 
 class ConsoleWorker {
+  final PathHelper pathHelper = createPathHelper();
+
   Arguments handleArguments(List<String> arguments) {
     final argParser = ArgParser()
     ..addMyOption(MyOption.libname)
@@ -23,9 +26,9 @@ class ConsoleWorker {
     
     bool isHelp = args.arguments.isEmpty || (args.getMyOption<bool?>(MyOption.help) ?? false);
     
-    if(isHelp) return Arguments(Uri.parse('./'), null, null, isHelp);
+    if(isHelp) return Arguments('', null, null, isHelp);
 
-    final path = Uri.parse(args.arguments[0]);
+    final path = pathHelper.canonicalize(args.arguments[0]);
     final String? libname = args.getMyOption(MyOption.libname);
     final String? filename = args.getMyOption(MyOption.filename);
 

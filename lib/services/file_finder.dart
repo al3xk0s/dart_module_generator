@@ -1,37 +1,53 @@
 import 'dart:io';
 
-import 'package:module_generator/models/file_info.dart';
+import 'package:module_generator/exceptions/fs_exceptions.dart';
+import 'package:module_generator/helper.dart';
+import 'package:module_generator/models/file/file_info.dart';
+import 'package:module_generator/services/file_info_parser.dart';
 
+class FileFoundResult {
+  const FileFoundResult(this.projectRoot, this.fileInfoList, this.moduleRoot);
+
+  final String? projectRoot;
+  final String moduleRoot;
+  final List<FileInfo> fileInfoList;
+}
 
 abstract class FileFinder {
-  Future<List<FileInfo>> getTargetFiles(Uri rootDirectory);
+  Future<FileFoundResult> getTargetFiles(String rootDirectory);
 }
 
 class FileFinderImpl implements FileFinder {
+  const FileFinderImpl(this.pathHelper, this.infoParser);
+
+  final PathHelper pathHelper;
+  final FileInfoParser infoParser;
+
   @override
-  Future<List<FileInfo>> getTargetFiles(Uri rootDirectory) async {
-    final root = rootDirectory.toFilePath();
-    final paths = await _getTargetFilePaths(root).toList();
-    return paths
+  Future<FileFoundResult> getTargetFiles(String rootDirectory) async {
+    final projectRoot = await pathHelper.getProjectRootDirectory(rootDirectory);
+    final paths = await _getAllFilePaths(rootDirectory).toList();
+    final fileInfoList = paths
       .where(_isTargetFile)
-      .map((fullpath) => FileInfo(filePath: fullpath, relative: _getRelative(fullpath, root)))
+      .map((fullpath) => infoParser.parse(projectRoot, rootDirectory, fullpath))
       .toList();
+
+    return FileFoundResult(
+      projectRoot,
+      fileInfoList,
+      rootDirectory,
+    );
   }
 
-  Stream<String> _getTargetFilePaths(String rootDirectory) async* {
+  Stream<String> _getAllFilePaths(String rootDirectory) async* {
     await for(final entity in Directory(rootDirectory).list()) {
-      if(await FileSystemEntity.isDirectory(entity.path)) yield* _getTargetFilePaths(entity.path);
+      if(await FileSystemEntity.isDirectory(entity.path)) yield* _getAllFilePaths(entity.path);
       if(await FileSystemEntity.isFile(entity.path)) yield entity.path;
     }
   }
 
-  String _getRelative(String full, String base) {
-    base = base.endsWith('/') ? base : '$base/';
-    return full.replaceFirst(base, '');
-  }
-
   bool _isTargetFile(String filepath) {
     const ext = '.dart';
-    return filepath.endsWith(ext);
+    return pathHelper.extention(filepath) == ext;
   }
 }

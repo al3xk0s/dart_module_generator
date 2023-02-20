@@ -1,35 +1,43 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:module_generator/exceptions/fs_exceptions.dart';
-import 'package:module_generator/models/file_info.dart';
+import 'package:module_generator/helper.dart';
+import 'package:module_generator/models/file/file_info.dart';
 import 'package:module_generator/models/module_generator/lib_file_generator.dart';
 import 'package:module_generator/models/module_generator/module_generation_result.dart';
-import 'package:module_generator/models/source/source_file.dart';
+import 'package:module_generator/models/file/source_file.dart';
 import 'package:module_generator/services/file_finder.dart';
 import 'package:module_generator/services/file_parser.dart';
 import 'package:module_generator/services/file_service.dart';
+import 'package:path/path.dart' as p;
 
 abstract class ModuleGenerator {
-  Future<ModuleGenerationResult> generate(Uri rootDirectory, {String? libname, String? filename});
+  Future<ModuleGenerationResult> generate(String rootDirectory, {String? libname, String? filename});
 }
 
 class ModuleGeneratorImpl implements ModuleGenerator {
-  ModuleGeneratorImpl(this.fileParser, this.fileFinder, this.fileService, this.libFileGenerator);
+  ModuleGeneratorImpl({
+    required this.fileParser,
+    required this.fileFinder,
+    required this.fileService,
+    required this.libFileGenerator,
+    required this.pathHelper,
+  });
 
+  final PathHelper pathHelper;
   final FileParser fileParser;
   final FileFinder fileFinder;
   final FileService fileService;
   final LibFileGenerator libFileGenerator;
 
   @override
-  Future<ModuleGenerationResult> generate(Uri rootDirectory, {String? libname, String? filename}) async {
+  Future<ModuleGenerationResult> generate(String rootDirectory, {String? libname, String? filename}) async {
     await _validateRoot(rootDirectory);
 
-    filename ??= _getDefaultFilename();
+    final filepath = pathHelper.resolve(rootDirectory, '${filename ?? _getDefaultFilename()}.dart');
     libname ??= _getDefaultLibname(rootDirectory);
 
-    await _validateFileName(rootDirectory, filename);
+    await _validateTargetFile(filepath);
 
     final filesInfo = await fileFinder.getTargetFiles(rootDirectory);
     final sourceFiles = await _getSourceFiles(filesInfo);
@@ -37,20 +45,17 @@ class ModuleGeneratorImpl implements ModuleGenerator {
     final libContent = libFileGenerator.generateLibFile(sourceFiles, libname);
     final fileContentPairs = sourceFiles.map((f) => RefactoredSourceFile(f.info, libFileGenerator.generateSourceFile(f.content, libname!)));
 
-    final path = _resolveFile(rootDirectory, filename);
-
     return ModuleGenerationResult(
-      IndexFile(path, libContent),
+      IndexFile(filepath, libContent),
       fileContentPairs, 
     );
   }
 
-  Future<void> _validateFileName(Uri rootDirectory, String filename) async {
-    final file = _resolveFile(rootDirectory, filename);
+  Future<void> _validateTargetFile(String file) async {
     if(await fileService.existFile(file)) throw FileAlreadyExistException(file);
   }
 
-  Future<void> _validateRoot(Uri root) async {
+  Future<void> _validateRoot(String root) async {
     final path = root.toFilePath();
 
     if(await Directory(path).exists()) return;
@@ -59,16 +64,13 @@ class ModuleGeneratorImpl implements ModuleGenerator {
 
   String _getDefaultFilename() => 'index';
 
-  String _getDefaultLibname(Uri root) {
+  String _getDefaultLibname(String root) {
     final f = root.toFilePath();
     return f.substring(f.lastIndexOf('/') + 1);
   }
 
-  String _resolveFile(Uri rootDirectory, String filename)
-    => '${rootDirectory.toFilePath()}/$filename.dart';
-
   Future<List<SourceFile>> _getSourceFiles(List<FileInfo> filesInfo) async {
-    final fileRawContentList = await Future.wait(filesInfo.map((i) => fileService.read(i.filePath)));
+    final fileRawContentList = await Future.wait(filesInfo.map((i) => fileService.read(i.fullpath)));
     return _getFiles(filesInfo, fileRawContentList).toList();
   }
 

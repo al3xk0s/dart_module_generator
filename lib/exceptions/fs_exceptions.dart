@@ -16,3 +16,7 @@ class FileAlreadyExistException extends FsException {
 class DirectoryNotFoundException extends FsException {
   DirectoryNotFoundException(String path) : super('Целевая дирректория \'$path\' не найдена');
 }
+
+class IsNotProjectExection extends FsException {
+  IsNotProjectExection() : super('Требуемый путь не является dart проектом');
+}

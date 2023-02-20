@@ -1,4 +1,4 @@
-import 'package:module_generator/models/file_info.dart';
+import 'package:module_generator/models/file/file_info.dart';
 
 abstract class WritebleFile {
   String get path;
@@ -11,7 +11,7 @@ class RefactoredSourceFile implements WritebleFile {
   final FileInfo info;
 
   @override
-  String get path => info.filePath;
+  String get path => info.fullpath;
 
   @override
   final Iterable<String> content;

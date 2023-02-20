@@ -1,10 +1,11 @@
 import 'package:module_generator/console/console_worker.dart';
+import 'package:module_generator/helper.dart';
 import 'package:module_generator/models/module_generator/module_generator_factory.dart';
-
+import 'package:path/path.dart' as p;
 void main(List<String> arguments) async {
+  
   final worker = ConsoleWorker();
   final args = worker.handleArguments(arguments);
-  
   if(args.isHelp) return worker.showHelp();
 
   try {

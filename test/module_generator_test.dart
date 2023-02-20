@@ -1,7 +1,7 @@
-import 'package:module_generator/models/file_info.dart';
+import 'package:module_generator/models/file/file_info.dart';
 import 'package:module_generator/models/module_generator/lib_file_generator.dart';
-import 'package:module_generator/models/source/source_content.dart';
-import 'package:module_generator/models/source/source_file.dart';
+import 'package:module_generator/models/file/source_content.dart';
+import 'package:module_generator/models/file/source_file.dart';
 
 import 'package:module_generator/services/file_finder.dart';
 import 'package:module_generator/services/file_parser.dart';
@@ -10,15 +10,15 @@ import 'package:test/test.dart';
 void main() {
   const modulePath = '/home/user/projects/module_generator/test/source/test_module';
 
-  const userViewFileInfo = FileInfo(filePath: '/home/user/projects/module_generator/test/source/test_module/view/user_view.dart', relative: 'view/user_view.dart');
+  const userViewFileInfo = FileInfo(fullpath: '/home/user/projects/module_generator/test/source/test_module/view/user_view.dart', dartModuleRelative: 'view/user_view.dart');
 
   const fileInfos = [
-    FileInfo(filePath: '/home/user/projects/module_generator/test/source/test_module/user.dart', relative: 'user.dart'),
-    FileInfo(filePath: '/home/user/projects/module_generator/test/source/test_module/view/address_view.dart', relative: 'view/address_view.dart'),
+    FileInfo(fullpath: '/home/user/projects/module_generator/test/source/test_module/user.dart', dartModuleRelative: 'user.dart'),
+    FileInfo(fullpath: '/home/user/projects/module_generator/test/source/test_module/view/address_view.dart', dartModuleRelative: 'view/address_view.dart'),
     userViewFileInfo,
-    FileInfo(filePath: '/home/user/projects/module_generator/test/source/test_module/view/view.dart', relative: 'view/view.dart'),
-    FileInfo(filePath: '/home/user/projects/module_generator/test/source/test_module/address.dart', relative: 'address.dart'),
-    FileInfo(filePath: '/home/user/projects/module_generator/test/source/test_module/models/repo/base/user_repo.dart', relative: 'models/repo/base/user_repo.dart'),
+    FileInfo(fullpath: '/home/user/projects/module_generator/test/source/test_module/view/view.dart', dartModuleRelative: 'view/view.dart'),
+    FileInfo(fullpath: '/home/user/projects/module_generator/test/source/test_module/address.dart', dartModuleRelative: 'address.dart'),
+    FileInfo(fullpath: '/home/user/projects/module_generator/test/source/test_module/models/repo/base/user_repo.dart', dartModuleRelative: 'models/repo/base/user_repo.dart'),
   ];
 
   const userViewSourceContent = SourceContent(
@@ -58,7 +58,7 @@ void main() {
   ];
 
   test('Find files', () async {
-    final actual = await FileFinderImpl().getTargetFiles(Uri.parse(modulePath));
+    final actual = await FileFinderImpl().getTargetFiles(String.parse(modulePath));
     expect(actual, fileInfos);
   });
 
@@ -98,7 +98,7 @@ void main() {
       '',
       ...userViewSourceContent.imports,
       '',
-      'part \'${userInfoSourceFile.info.relative}\';',
+      'part \'${userInfoSourceFile.info.dartModuleRelative}\';',
     ];
 
     expect(actual, expected);

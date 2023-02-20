@@ -1,4 +1,4 @@
-import 'package:module_generator/models/source/source_content.dart';
+import 'package:module_generator/models/file/source_content.dart';
 
 abstract class FileParser {
   SourceContent parse(Iterable<String> lines);

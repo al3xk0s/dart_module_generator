@@ -1,7 +1,8 @@
 
-import 'package:module_generator/models/source/source_content.dart';
-import 'package:module_generator/models/source/source_file.dart';
-import 'package:module_generator/models/source/source_line.dart';
+import 'package:module_generator/helper.dart';
+import 'package:module_generator/models/file/source_content.dart';
+import 'package:module_generator/models/file/source_file.dart';
+import 'package:module_generator/models/file/source_line.dart';
 
 abstract class LibFileGenerator {
   Iterable<String> generateLibFile(List<SourceFile> files, String libname);
@@ -9,7 +10,11 @@ abstract class LibFileGenerator {
 }
 
 class LibFileGeneratorImpl implements LibFileGenerator {
+  const LibFileGeneratorImpl(this.pathHelper);
+
   static const _indent = '';
+
+  final PathHelper pathHelper;
 
   @override
   Iterable<String> generateLibFile(List<SourceFile> files, String libname) sync* {
@@ -27,12 +32,13 @@ class LibFileGeneratorImpl implements LibFileGenerator {
   }
 
   bool _isSourceReferenceImport(String importStr, List<SourceFile> files) {
-    return files.any((f) => importStr.endsWith("${f.info.relative}';"));
+    final relativeImportPart = pathHelper.getRelativeProjectPath(importStr);
+    return files.any((f) => relativeImportPart == (f.info.dartProjectRelative ?? ''));
   }
 
   Iterable<String> _getPartBlock(List<SourceFile> files) sync* {
     for(final file in files) {
-      yield PartLine(file.info.relative).toString();
+      yield PartLine(file.info.dartModuleRelative).toString();
     }
   }
 
