@@ -4,7 +4,7 @@ import 'package:module_generator/exceptions/fs_exceptions.dart';
 import 'package:path/path.dart' as p;
 
 class PathHelper {
-  const PathHelper();
+  PathHelper();
 
   String resolve(String root, String file) => p.join(root.toString(), file);
   String canonicalize(String path) => p.canonicalize(path);
@@ -27,9 +27,20 @@ class PathHelper {
     return _getProjectRootDirectory(p.dirname(rootDirectory), rootPrefix);
   }
 
+  final packagePattern = RegExp('package:[a-z_]+');
+  final importPathPattern = RegExp("'.*'");
+
   String getRelativeProjectPath(String importString) {
-    
-    final 
+    final match = importPathPattern.firstMatch(importString);
+    if(match == null) return importString;
+
+    final importPath = importString.substring(match.start, match.end);
+    final packageBaseMatch = packagePattern.firstMatch(importPath);
+
+    if(packageBaseMatch == null) return importString;
+
+    final packageBase = importPath.substring(packageBaseMatch.start, packageBaseMatch.end + 1);
+    return relative(packageBase, importString);
   }
 
   String toDartStandart(String path) {
@@ -37,4 +48,4 @@ class PathHelper {
   }
 }
 
-PathHelper createPathHelper() => const PathHelper();
+PathHelper createPathHelper() => PathHelper();
