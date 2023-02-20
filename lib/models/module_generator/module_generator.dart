@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'dart:math';
 
+import 'package:module_generator/exceptions/fs_exceptions.dart';
 import 'package:module_generator/models/file_info.dart';
 import 'package:module_generator/models/module_generator/lib_file_generator.dart';
 import 'package:module_generator/models/module_generator/module_generation_result.dart';
@@ -22,6 +24,8 @@ class ModuleGeneratorImpl implements ModuleGenerator {
 
   @override
   Future<ModuleGenerationResult> generate(Uri rootDirectory, {String? libname, String? filename}) async {
+    await _validateRoot(rootDirectory);
+
     filename ??= _getDefaultFilename();
     libname ??= _getDefaultLibname(rootDirectory);
 
@@ -42,7 +46,15 @@ class ModuleGeneratorImpl implements ModuleGenerator {
   }
 
   Future<void> _validateFileName(Uri rootDirectory, String filename) async {
-    if(await fileService.existFile(_resolveFile(rootDirectory, filename))) throw Exception('File $filename already exist');
+    final file = _resolveFile(rootDirectory, filename);
+    if(await fileService.existFile(file)) throw FileAlreadyExistException(file);
+  }
+
+  Future<void> _validateRoot(Uri root) async {
+    final path = root.toFilePath();
+
+    if(await Directory(path).exists()) return;
+    throw DirectoryNotFoundException(path);
   }
 
   String _getDefaultFilename() => 'index';
