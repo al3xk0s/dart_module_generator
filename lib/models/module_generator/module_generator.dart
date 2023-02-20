@@ -40,7 +40,7 @@ class ModuleGeneratorImpl implements ModuleGenerator {
     await _validateTargetFile(filepath);
 
     final filesInfo = await fileFinder.getTargetFiles(rootDirectory);
-    final sourceFiles = await _getSourceFiles(filesInfo);
+    final sourceFiles = await _getSourceFiles(filesInfo.fileInfoList);
 
     final libContent = libFileGenerator.generateLibFile(sourceFiles, libname);
     final fileContentPairs = sourceFiles.map((f) => RefactoredSourceFile(f.info, libFileGenerator.generateSourceFile(f.content, libname!)));
@@ -56,18 +56,12 @@ class ModuleGeneratorImpl implements ModuleGenerator {
   }
 
   Future<void> _validateRoot(String root) async {
-    final path = root.toFilePath();
-
-    if(await Directory(path).exists()) return;
-    throw DirectoryNotFoundException(path);
+    if(await Directory(root).exists()) return;
+    throw DirectoryNotFoundException(root);
   }
 
   String _getDefaultFilename() => 'index';
-
-  String _getDefaultLibname(String root) {
-    final f = root.toFilePath();
-    return f.substring(f.lastIndexOf('/') + 1);
-  }
+  String _getDefaultLibname(String root) => pathHelper.basename(root);
 
   Future<List<SourceFile>> _getSourceFiles(List<FileInfo> filesInfo) async {
     final fileRawContentList = await Future.wait(filesInfo.map((i) => fileService.read(i.fullpath)));

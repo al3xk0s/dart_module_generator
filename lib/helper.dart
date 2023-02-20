@@ -6,17 +6,11 @@ import 'package:path/path.dart' as p;
 class PathHelper {
   const PathHelper();
 
-  String resolve(String root, String file) {
-    return p.join(root.toString(), file);
-  }
-
-  String canonicalize(String path) {
-    return p.canonicalize(path);
-  }
-
-  String relative(String root, String fullpath) {
-    return p.relative(fullpath, from: root);
-  }
+  String resolve(String root, String file) => p.join(root.toString(), file);
+  String canonicalize(String path) => p.canonicalize(path);
+  String relative(String root, String fullpath) => p.relative(fullpath, from: root);
+  String extention(String path) => p.extension(path);
+  String basename(String root) => p.basename(root);
 
   Future<String?> getProjectRootDirectory(String currentRoot) {
     String rootPrefix = p.rootPrefix(currentRoot);
@@ -33,17 +27,13 @@ class PathHelper {
     return _getProjectRootDirectory(p.dirname(rootDirectory), rootPrefix);
   }
 
-  String extention(String path) {
-    
-    return p.extension(path);
-  }
-
   String getRelativeProjectPath(String importString) {
     
+    final 
   }
 
   String toDartStandart(String path) {
-    
+    return p.posix.normalize(path);
   }
 }
 
